@@ -8,7 +8,7 @@
 int clearWithEnter(void);
 int getNum(void);
 
-const int arraySize = 50;
+const int stringArraySize = 50;
 
 const int counter = 0;
 
@@ -18,7 +18,7 @@ const int returnVal = 1;
 
 struct character 
 {
-	char name[arraySize];
+	char name[stringArraySize];
 	int health;
 	int strength;
 	int speed;
@@ -27,7 +27,7 @@ struct character
 
 struct enemy
 {
-	char name[arraySize];
+	char name[stringArraySize];
 	int health;
 	int strength;
 	int speed;
@@ -99,7 +99,7 @@ int main(void)
 
 	struct character player = {}; 
 
-	fgets(player.name, arraySize, stdin);
+	fgets(player.name, stringArraySize, stdin);
 
 	if (player.name[strlen(player.name) - 1] == '\n')
 	{
@@ -194,7 +194,7 @@ int main(void)
 
 		printf("Enter a new character name: ");
 
-		fgets(player.name, arraySize, stdin);  
+		fgets(player.name, stringArraySize, stdin);
 
 		if (player.name[strlen(player.name) - 1] == '\n') 
 		{
@@ -276,9 +276,9 @@ int clearWithEnter(void)
 {
 	printf("\n\tPress Enter to continue");
 
-	char enter[arraySize] = "";  
+	char enter[stringArraySize] = "";
 
-	fgets(enter, arraySize, stdin);   
+	fgets(enter, stringArraySize, stdin);
 	if (enter[0] == '\n')
 	{
 		system("cls");
@@ -291,10 +291,10 @@ int clearWithEnter(void)
 
 int getNum(void)
 {
-	char record[arraySize] = { 0 }; 
+	char record[stringArraySize] = { 0 };
 	int number = 0;
 
-	fgets(record, arraySize, stdin);  
+	fgets(record, stringArraySize, stdin);
 
 	if (sscanf(record, "%d", &number) != 1)
 	{
