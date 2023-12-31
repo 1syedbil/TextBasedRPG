@@ -7,6 +7,7 @@
 //prototypes
 int clearWithEnter(void);
 int getNum(void);
+void characterCreator(struct character* player); 
 
 const int stringArraySize = 50;
 
@@ -15,6 +16,26 @@ const int counter = 0;
 const int quitProg = -1; 
 
 const int returnVal = 1; 
+
+const int MAXhp = 100;
+
+const int T1spd = 30;
+
+const int T2spd = 60;
+
+const int T3spd = 45; 
+
+const int T1strn = 30;
+
+const int T2strn = 60;
+
+const int T3strn = 45;
+
+const int T1agl = 30;
+
+const int T2agl = 60;
+
+const int T3agl = 45; 
 
 struct character 
 {
@@ -97,78 +118,9 @@ int main(void)
 
 	printf("Enter your character name: ");
 
-	struct character player = {}; 
+	struct character player = {};
 
-	fgets(player.name, stringArraySize, stdin);
-
-	if (player.name[strlen(player.name) - 1] == '\n')
-	{
-		player.name[strlen(player.name) - 1] = '\0';
-	}
-
-	printf("\n"); 
-
-	printf("Select what type of build you would like your character to have.\n\n");
-
-	printf("1. Strength type - sacrifices speed and agility for a greater strength stat\n");
-
-	printf("2. Speed type - sacrifices strength and agility for a greater speed stat\n");
-
-	printf("3. Agility type - sacrifices strength and speed for a greater agility stat\n");
-
-	printf("4. All-rounder type - does not sacrifice any stats but is not exceptional in any specific stat\n\n");
-
-	printf("Enter the number corresponding with your decision.\n");
-
-	decision = getNum();
-
-	if (decision == 1)
-	{
-		player.speed = 30;
-		player.agility = 30;
-		player.strength = 60; 
-		player.health = 100;
-	}
-
-	else if (decision == 2)
-	{
-		player.speed = 60;
-		player.agility = 30; 
-		player.strength = 30;
-		player.health = 100; 
-	}
-
-	else if (decision == 3)
-	{
-		player.speed = 30;
-		player.agility = 60;
-		player.strength = 30; 
-		player.health = 100;
-	}
-
-	else if (decision == 4)
-	{
-		player.speed = 45;
-		player.agility = 45;
-		player.strength = 45; 
-		player.health = 100;  
-	}
-
-	clearWithEnter(); 
-
-	printf("Here are your stats:\n\n");
-
-	printf("Name - %s\n", player.name);
-	
-	printf("Health - %d\n", player.health);
-
-	printf("Strength - %d\n", player.strength);
-
-	printf("Speed - %d\n", player.speed);
-
-	printf("Agility - %d\n", player.agility);
-
-	clearWithEnter(); 
+	characterCreator(&player);   
 
 	decision = 0;
 
@@ -180,7 +132,7 @@ int main(void)
 
 		printf("\t2. No\n");
 
-		printf("Enter a number corresponding with your decision.\n");
+		printf("Type the number corresponding with your decision and hit enter.\n");
 
 		decision = getNum();
 
@@ -194,82 +146,87 @@ int main(void)
 
 		printf("Enter a new character name: ");
 
-		fgets(player.name, stringArraySize, stdin);
-
-		if (player.name[strlen(player.name) - 1] == '\n') 
-		{
-			player.name[strlen(player.name) - 1] = '\0';  
-		}
-
-		clearWithEnter();
-
-		printf("Select a new character build.\n\n");
-
-		printf("1. Strength type - sacrifices speed and agility for a greater strength stat\n");
-
-		printf("2. Speed type - sacrifices strength and agility for a greater speed stat\n");
-
-		printf("3. Agility type - sacrifices strength and speed for a greater agility stat\n");
-
-		printf("4. All-rounder type - does not sacrifice any stats but is not exceptional in any specific stat\n\n");
-
-		printf("Enter the number corresponding with your decision.\n");
-
-		int newDecision = getNum(); 
-
-		if (newDecision == 1)
-		{
-			player.speed = 30;
-			player.agility = 30;
-			player.strength = 60;
-			player.health = 100;
-		}
-
-		else if (newDecision == 2)
-		{
-			player.speed = 60;
-			player.agility = 30;
-			player.strength = 30;
-			player.health = 100;
-		}
-
-		else if (newDecision == 3) 
-		{
-			player.speed = 30;  
-			player.agility = 60;  
-			player.strength = 30;  
-			player.health = 100;  
-		}
-
-		else if (newDecision == 4) 
-		{
-			player.speed = 45;  
-			player.agility = 45;  
-			player.strength = 45;   
-			player.health = 100;  
-		}
-
-		clearWithEnter();  
-
-		printf("Here are your stats:\n\n");
-
-		printf("Name - %s\n", player.name);  
-		   
-		printf("Health - %d\n", player.health);  
-
-		printf("Strength - %d\n", player.strength);  
-
-		printf("Speed - %d\n", player.speed);  
-
-		printf("Agility - %d\n", player.agility);  
-
-		clearWithEnter(); 
+		characterCreator(&player); 
 	}
 
 	printf("\"I see... then from here on you will be known as the great hero %s!\"\n", player.name);  
 
 
 	return 0;
+}
+
+void characterCreator(struct character* player)
+{
+	fgets(player->name, stringArraySize, stdin);  
+	   
+	if (player->name[strlen(player->name) - 1] == '\n') 
+	{
+		player->name[strlen(player->name) - 1] = '\0'; 
+	} 
+
+	printf("\n"); 
+
+	printf("Select what type of build you would like your character to have.\n\n"); 
+
+	printf("1. Strength type - sacrifices speed and agility for a greater strength stat\n"); 
+
+	printf("2. Speed type - sacrifices strength and agility for a greater speed stat\n"); 
+
+	printf("3. Agility type - sacrifices strength and speed for a greater agility stat\n"); 
+
+	printf("4. All-rounder type - does not sacrifice any stats but is not exceptional in any specific stat\n\n"); 
+
+	printf("Type the number corresponding with your decision and hit enter.\n"); 
+
+	int decision = getNum(); 
+
+	if (decision == 1) 
+	{
+		player->health = MAXhp;
+		player->strength = T2strn;
+		player->speed = T1spd;
+		player->agility = T1agl; 
+	}
+
+	else if (decision == 2)
+	{
+		player->health = MAXhp; 
+		player->strength = T1strn; 
+		player->speed = T2spd; 
+		player->agility = T1agl; 
+	}
+
+	else if (decision == 3)
+	{
+		player->health = MAXhp; 
+		player->strength = T1strn;
+		player->speed = T1spd; 
+		player->agility = T2agl; 
+	}
+
+	else if (decision == 4)
+	{
+		player->health = MAXhp; 
+		player->strength = T3strn;
+		player->speed = T3spd;
+		player->agility = T3agl;
+	}
+
+	clearWithEnter(); 
+
+	printf("Here are your stats:\n\n"); 
+
+	printf("Name - %s\n", player->name); 
+
+	printf("Health - %d\n", player->health);
+
+	printf("Strength - %d\n", player->strength);
+
+	printf("Speed - %d\n", player->speed);
+
+	printf("Agility - %d\n", player->agility);
+
+	clearWithEnter();
 }
 
 int clearWithEnter(void)
@@ -279,9 +236,9 @@ int clearWithEnter(void)
 	char enter[stringArraySize] = "";
 
 	fgets(enter, stringArraySize, stdin);
-	if (enter[0] == '\n')
+	if (strchr(enter, '\n') != NULL) 
 	{
-		system("cls");
+		system("cls"); 
 	}
 	else
 	{
