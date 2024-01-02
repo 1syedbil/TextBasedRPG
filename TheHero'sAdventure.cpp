@@ -1,13 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctime> 
 
 #pragma warning(disable: 4996)
 
 //prototypes
 int clearWithEnter(void);
 int getNum(void);
+int gameOver(void);
 void characterCreator(struct character* player); 
+void randEncounter(struct enemy* monster, struct character* player);  
 
 const int stringArraySize = 50;
 
@@ -37,16 +40,15 @@ const int T2agl = 60;
 
 const int T3agl = 45; 
 
-struct character 
-{
-	char name[stringArraySize];
-	int health;
-	int strength;
-	int speed;
-	int agility;
-};
+const int t1ProbRange = 3;
 
-struct enemy
+const int t2ProbRange = 6;
+
+const int t3ProbRange = 9;
+
+const int t4ProbRange = 12; 
+
+struct character 
 {
 	char name[stringArraySize];
 	int health;
@@ -64,13 +66,50 @@ struct consumable
 	int aglUp;
 };
 
-struct weapon
+struct attack
 {
+	char name[stringArraySize];
 	int dmg;
-	int defense;
-	int numOfUses;
+	int strnReq;
+	int spdReq;
 };
 
+struct enemy
+{
+	char name[stringArraySize];
+	int health;
+	int strength;
+	int speed;
+	struct attack attack1;
+	struct attack attack2;
+};
+
+typedef struct enemy Enemy;
+
+struct weapon
+{
+	char name[stringArraySize];
+	int defense;
+	struct attack attack1;
+	struct attack attack2;
+	struct attack attack3;
+};
+
+typedef struct weapon Weapon; 
+
+const Enemy t1 = { "Troll", MAXhp, 70, 25, {"Strong Kick", 30, 10, 5}, {"Strong Punch", 30, 10, 5}}; 
+
+const Enemy t2 = { "Ogre", MAXhp, 60, 25, {"Regular Kick", 20, 10, 5}, {"Regular Punch", 20, 10, 5}}; 
+
+const Enemy t3 = { "Goblin", MAXhp, 30, 40, {"Regular Shove", 10, 5, 10}, {"Regular Stab", 10, 5, 10}};
+
+const Enemy t4 = { "Witch", MAXhp, 20, 35, {"Regular Spell", 10, 1, 7}, {"Weak Spell", 5, 1, 7}};
+
+const Weapon strtSwrd = { "Reg Sword", 10, {"Reg Slash", 10, 5, 3}, {"Strg Slash", 20, 7, 2}, {"Wk Slas", 5, 3, 4} }; 
+
+const Weapon strtSpr = { "Reg Spear", 10, {"Reg Pierce", 10, 3, 5}, {"Strg Pierce", 20, 2, 7}, {"Wk Pierce", 5, 4, 3} };
+
+const Weapon strtShld = { "Reg Shield", 20, {"Reg Charge", 7, 2, 2}, {"Strg Charge", 14, 4, 4}, {"Wk Charge", 3, 1, 1} };
 
 int main(void)
 {
@@ -78,13 +117,7 @@ int main(void)
 
 	clearWithEnter();
 
-	printf("Would you like to start a new game?\n");
-
-	printf("\t1. Start New Game\n");
-	
-	printf("\t2. Quit\n");
-
-	printf("Enter the number corresponding with your decision.\n");
+	printf("Would you like to start a new game?\n\t1. Start New Game\n\t2. Quit\nEnter the number corresponding with your decision.\n");
 
 	int decision = getNum();
 
@@ -101,22 +134,15 @@ int main(void)
 
 	clearWithEnter();
 
-	printf("You suddenly awake in a room resembling a large monestary or a chapel...\n");
-
-	printf("The sun shines down on you from a tall stained glass window.\n");
+	printf("You suddenly awake in a room resembling a large monestary or a chapel...\nThe sun shines down on you from a tall stained glass window.\n");
 
 	clearWithEnter();
 
-	printf("A member of this monestary walks up to you and speaks to you in a soft and kind voice...\n\n");
-
-	printf("\"Welcome great hero. May I know thy name?...\"\n"); 
+	printf("A member of this monestary walks up to you and speaks to you in a soft and kind voice...\n\n\"Welcome great hero. May I know thy name?...\"\n"); 
 
 	clearWithEnter();
 
-	
-	printf("Create your character...\n\n");
-
-	printf("Enter your character name: ");
+	printf("Create your character...\n\nEnter your character name: ");
 
 	struct character player = {};
 
@@ -126,13 +152,7 @@ int main(void)
 
 	while (decision != 1)
 	{
-		printf("Are you satisified with your character?\n\n");
-
-		printf("\t1. Yes\n");
-
-		printf("\t2. No\n");
-
-		printf("Type the number corresponding with your decision and hit enter.\n");
+		printf("Are you satisified with your character?\n\t1. Yes\n\t2. No\nType the number corresponding with your decision and hit enter.\n");
 
 		decision = getNum();
 
@@ -149,10 +169,136 @@ int main(void)
 		characterCreator(&player); 
 	}
 
-	printf("\"I see... then from here on you will be known as the great hero %s!\"\n", player.name);  
+	printf("\"I see... then from here on you will be known as the Great Hero %s!\"\n", player.name);  
+
+	clearWithEnter();
+
+	printf("\"Oh Great Hero %s! Our kingdom is in grave danger from the threat of monsters!\"\n\n\"Our forces are not strong enough to defeat them as they are being controlled by the powerful Dark King!\"\n\n\"You are the only one with the potential to be able to defeat him... please... you must help us.\"\n", player.name); 
+
+	clearWithEnter();
+
+	printf("Will you accept your mission?\n\t1. Yes\n\t2. No\nType the number corresponding with your decision and hit enter.\n");
+
+	decision = getNum();
+
+	if (decision == 1)
+	{
+		clearWithEnter();
+
+		printf("\"Wonderful! We are forever indebted you!\"\n\n\"Guards bring the hero his weapon of choice...\"\n");
+
+		clearWithEnter();
+	}
+	else if (decision == 2)
+	{
+		clearWithEnter();  
+
+		return gameOver(); 
+	}
+
+	printf("Three guards walk up you. Each one kneels to you and offers up an item they are holding...\n\t1. Sword - Name: %s, Defense: %d, Attacks: %s, %s, %s\n\t2. Spear - Name: %s, Defense: %d, Attacks: %s, %s, %s\n\t3. Shield - Name: %s, Defense: %d, Ataacks: %s, %s, %s\nWhat will you choose?\n\n", strtSwrd.name, strtSwrd.defense, strtSwrd.attack1.name, strtSwrd.attack2.name, strtSwrd.attack3.name, strtSpr.name, strtSpr.defense, strtSpr.attack1.name, strtSpr.attack2.name, strtSpr.attack3.name, strtShld.name, strtShld.defense, strtShld.attack1.name, strtShld.attack2.name, strtShld.attack3.name);
+
+	printf("Type the number corresponding with your decision and hit enter.\n");
+
+	Weapon currentWeapon = {};
+
+	decision = getNum();
+
+	if (decision == 1)
+	{
+		currentWeapon = strtSwrd;
+
+		printf("\nYou selected the %s. Here are its attack stats:\n\tName - %s, Damage - %d, StrengthReq - %d, SpeedReq - %d\n\tName - %s, Damage - %d, StrengthReq - %d, SpeedReq - %d\n\tName - %s, Damage - %d, StrengthReq - %d, SpeedReq - %d\n", currentWeapon.name, currentWeapon.attack1.name, currentWeapon.attack1.dmg, currentWeapon.attack1.strnReq, currentWeapon.attack1.spdReq, currentWeapon.attack2.name, currentWeapon.attack2.dmg, currentWeapon.attack2.strnReq, currentWeapon.attack2.spdReq, currentWeapon.attack3.name, currentWeapon.attack3.dmg, currentWeapon.attack3.strnReq, currentWeapon.attack3.spdReq);    
+
+		clearWithEnter();
+	} 
+	else if (decision == 2) 
+	{
+		currentWeapon = strtSpr;
+
+		printf("\nYou selected the %s. Here are its attack stats:\n\tName - %s, Damage - %d, StrengthReq - %d, SpeedReq - %d\n\tName - %s, Damage - %d, StrengthReq - %d, SpeedReq - %d\n\tName - %s, Damage - %d, StrengthReq - %d, SpeedReq - %d\n", currentWeapon.name, currentWeapon.attack1.name, currentWeapon.attack1.dmg, currentWeapon.attack1.strnReq, currentWeapon.attack1.spdReq, currentWeapon.attack2.name, currentWeapon.attack2.dmg, currentWeapon.attack2.strnReq, currentWeapon.attack2.spdReq, currentWeapon.attack3.name, currentWeapon.attack3.dmg, currentWeapon.attack3.strnReq, currentWeapon.attack3.spdReq); 
+
+		clearWithEnter();  
+	}
+	else if (decision == 3)
+	{
+		currentWeapon = strtShld;
+
+		printf("\nYou selected the %s. Here are its attack stats:\n\tName - %s, Damage - %d, StrengthReq - %d, SpeedReq - %d\n\tName - %s, Damage - %d, StrengthReq - %d, SpeedReq - %d\n\tName - %s, Damage - %d, StrengthReq - %d, SpeedReq - %d\n", currentWeapon.name, currentWeapon.attack1.name, currentWeapon.attack1.dmg, currentWeapon.attack1.strnReq, currentWeapon.attack1.spdReq, currentWeapon.attack2.name, currentWeapon.attack2.dmg, currentWeapon.attack2.strnReq, currentWeapon.attack2.spdReq, currentWeapon.attack3.name, currentWeapon.attack3.dmg, currentWeapon.attack3.strnReq, currentWeapon.attack3.spdReq); 
+
+		clearWithEnter();  
+	}
+
+	printf("The monestary member bids you farewell with a kind smile as you embark on the path through the forest towards the Dark King's castle...\n");
+
+	clearWithEnter();
+
+	printf("You continue to walk through the forest.\n");
+
+	clearWithEnter(); 
+
+	Enemy currentEnemy = {};
+
+	randEncounter(&currentEnemy, &player); 
 
 
 	return 0;
+}
+
+void randEncounter(struct enemy* monster, struct character* player) 
+{
+	srand(time(NULL));  
+
+	int i = rand() % 1000;  
+
+	if (i >= counter && i <= 250)    
+	{
+		*monster = t1; 
+	}
+	else if (i > 250 && i <= 500) 
+	{
+		*monster = t2;
+	}
+	else if (i > 500 && i <= 750) 
+	{
+		*monster = t3; 
+	}
+	else if (i > 750 && i <= 999) 
+	{
+		*monster = t4; 
+	}
+
+	printf("Oh no! You've run into an enemy %s! Would you like to Fight or Run Away?\n\t1. Fight\n\t2. Run Away\nType the number corresponding with your decision and hit enter.\n", monster->name); 
+
+	int decision = getNum();
+
+	if (decision == 1)
+	{
+		printf("You have entered a battle with an enemy %s!\n", monster->name);  
+
+		clearWithEnter();
+
+		//use the battle function here
+	}
+	else if (decision == 2) 
+	{
+		i = rand() % 1000;
+
+		if (i <= 333 || player->speed > monster->speed + 5)      
+		{
+			printf("You have successfully escaped the enemy %s!\n", monster->name); 
+
+			clearWithEnter();
+		}
+		else
+		{
+			printf("You weren't fast enough to escape the enemy %s. You are now entering a battle!\n", monster->name); 
+
+			clearWithEnter(); 
+
+			//use the battle function here
+		}
+	}
 }
 
 void characterCreator(struct character* player)
@@ -164,19 +310,7 @@ void characterCreator(struct character* player)
 		player->name[strlen(player->name) - 1] = '\0'; 
 	} 
 
-	printf("\n"); 
-
-	printf("Select what type of build you would like your character to have.\n\n"); 
-
-	printf("1. Strength type - sacrifices speed and agility for a greater strength stat\n"); 
-
-	printf("2. Speed type - sacrifices strength and agility for a greater speed stat\n"); 
-
-	printf("3. Agility type - sacrifices strength and speed for a greater agility stat\n"); 
-
-	printf("4. All-rounder type - does not sacrifice any stats but is not exceptional in any specific stat\n\n"); 
-
-	printf("Type the number corresponding with your decision and hit enter.\n"); 
+	printf("\nSelect what type of build you would like your character to have.\n\n1. Strength type - sacrifices speed and agility for a greater strength stat\n2. Speed type - sacrifices strength and agility for a greater speed stat\n3. Agility type - sacrifices strength and speed for a greater agility stat\n4. All-rounder type - does not sacrifice any stats but is not exceptional in any specific stat\n\nType the number corresponding with your decision and hit enter.\n"); 
 
 	int decision = getNum(); 
 
@@ -214,19 +348,18 @@ void characterCreator(struct character* player)
 
 	clearWithEnter(); 
 
-	printf("Here are your stats:\n\n"); 
-
-	printf("Name - %s\n", player->name); 
-
-	printf("Health - %d\n", player->health);
-
-	printf("Strength - %d\n", player->strength);
-
-	printf("Speed - %d\n", player->speed);
-
-	printf("Agility - %d\n", player->agility);
+	printf("Here are your stats:\n\nName - %s\nHealth - %d\nStrength - %d\nSpeed - %d\nAgility - %d\n", player->name, player->health, player->strength, player->speed, player->agility);
 
 	clearWithEnter();
+}
+
+int gameOver(void)
+{
+	printf("GAME OVER. Closing game...\n");
+
+	clearWithEnter();
+
+	return quitProg; 
 }
 
 int clearWithEnter(void)
@@ -259,4 +392,4 @@ int getNum(void)
 		number = -1;
 	}
 	return number;
-}  
+}
