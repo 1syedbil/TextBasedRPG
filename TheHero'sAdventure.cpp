@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctime> 
+#include <ctime> //included this so that srand(time(NULL)) would work
 
 #pragma warning(disable: 4996)
 
@@ -10,7 +10,8 @@ int clearWithEnter(void);
 int getNum(void);
 int gameOver(void);
 void characterCreator(struct character* player); 
-void randEncounter(struct enemy* monster, struct character* player);  
+void randEncounter(struct enemy* monster, struct character* player, struct weapon* weapon);   
+void battle(struct enemy monster, struct character player, struct weapon weapon);  
 
 const int stringArraySize = 50;
 
@@ -40,13 +41,13 @@ const int T2agl = 60;
 
 const int T3agl = 45; 
 
-const int t1ProbRange = 3;
+const int t1ProbRange = 250;
 
-const int t2ProbRange = 6;
+const int t2ProbRange = 500;
 
-const int t3ProbRange = 9;
+const int t3ProbRange = 750;
 
-const int t4ProbRange = 12; 
+const int t4ProbRange = 999; 
 
 struct character 
 {
@@ -57,7 +58,7 @@ struct character
 	int agility;
 };
 
-struct consumable
+struct consumableItem 
 {
 	int regen;
 	int posion;
@@ -101,9 +102,9 @@ const Enemy t1 = { "Troll", MAXhp, 70, 25, {"Strong Kick", 30, 10, 5}, {"Strong 
 
 const Enemy t2 = { "Ogre", MAXhp, 60, 25, {"Regular Kick", 20, 10, 5}, {"Regular Punch", 20, 10, 5}}; 
 
-const Enemy t3 = { "Goblin", MAXhp, 30, 40, {"Regular Shove", 10, 5, 10}, {"Regular Stab", 10, 5, 10}};
+const Enemy t3 = { "Goblin", MAXhp, 30, 40, {"Regular Shove", 10, 5, 10}, {"Regular Stab", 12, 5, 10}}; 
 
-const Enemy t4 = { "Witch", MAXhp, 20, 35, {"Regular Spell", 10, 1, 7}, {"Weak Spell", 5, 1, 7}};
+const Enemy t4 = { "Witch", MAXhp, 20, 35, {"Regular Spell", 12, 1, 7}, {"Weak Spell", 5, 1, 7}};
 
 const Weapon strtSwrd = { "Reg Sword", 10, {"Reg Slash", 10, 5, 3}, {"Strg Slash", 20, 7, 2}, {"Wk Slas", 5, 3, 4} }; 
 
@@ -239,31 +240,32 @@ int main(void)
 
 	Enemy currentEnemy = {};
 
-	randEncounter(&currentEnemy, &player); 
+	randEncounter(&currentEnemy, &player, &currentWeapon);  
 
 
 	return 0;
 }
 
-void randEncounter(struct enemy* monster, struct character* player) 
+void randEncounter(struct enemy* monster, struct character* player, struct weapon* weapon)  
 {
+	//needed to add this so that rand() would generate a new random number every single time the program was run
 	srand(time(NULL));  
 
 	int i = rand() % 1000;  
 
-	if (i >= counter && i <= 250)    
+	if (i >= counter && i <= t1ProbRange)    
 	{
 		*monster = t1; 
 	}
-	else if (i > 250 && i <= 500) 
+	else if (i > t1ProbRange && i <= t2ProbRange) 
 	{
 		*monster = t2;
 	}
-	else if (i > 500 && i <= 750) 
+	else if (i > t2ProbRange && i <= t3ProbRange) 
 	{
 		*monster = t3; 
 	}
-	else if (i > 750 && i <= 999) 
+	else if (i > t3ProbRange && i <= t4ProbRange)  
 	{
 		*monster = t4; 
 	}
@@ -272,19 +274,21 @@ void randEncounter(struct enemy* monster, struct character* player)
 
 	int decision = getNum();
 
+	clearWithEnter(); 
+
 	if (decision == 1)
 	{
 		printf("You have entered a battle with an enemy %s!\n", monster->name);  
 
 		clearWithEnter();
 
-		//use the battle function here
+		battle(*monster, *player, *weapon);    
 	}
 	else if (decision == 2) 
 	{
 		i = rand() % 1000;
 
-		if (i <= 333 || player->speed > monster->speed + 5)      
+		if (i <= 501 || player->speed > monster->speed + 5)      
 		{
 			printf("You have successfully escaped the enemy %s!\n", monster->name); 
 
@@ -296,8 +300,117 @@ void randEncounter(struct enemy* monster, struct character* player)
 
 			clearWithEnter(); 
 
-			//use the battle function here
+			battle(*monster, *player, *weapon);   
 		}
+	}
+}
+
+void battle(struct enemy monster, struct character player, struct weapon weapon)  
+{
+	printf("A hostile %s attacks you!\n", monster.name);
+
+	clearWithEnter(); 
+
+	printf("Current Status:\n\n\tHealth: %d\n\tStrength: %d\n\tSpeed: %d\n\tAgility: %d\n", player.health, player.strength, player.speed, player.agility);
+
+	clearWithEnter(); 
+
+	struct attack currentMonAtk = {};
+
+	while (monster.health >= 0)
+	{
+		srand(time(NULL)); 
+
+		int i = rand() % 10; 
+
+		if (i >= 0 && i <= 4)
+		{
+			currentMonAtk = monster.attack1; 
+		}
+		else if (i >= 5 && i <= 9)
+		{
+			currentMonAtk = monster.attack2; 
+		}
+
+		printf("The %s used %s! What will you do?\n", monster.name, currentMonAtk.name);  
+
+		clearWithEnter(); 
+
+		printf("1. Dodge\t\t2. Defend\nType the number corresponding with your decision and hit enter.\n");
+
+		int decision = getNum();
+
+		clearWithEnter();
+
+		if (decision == 1)
+		{
+			if (player.agility > monster.speed)
+			{
+				printf("You successfully dodged the %s and took no damage.\n", currentMonAtk.name); 
+
+				clearWithEnter();   
+			}
+			else if (player.agility <= monster.speed)
+			{
+				player.health -= currentMonAtk.dmg; 
+
+				printf("You failed to dodge the %s and took %d damage.\n", currentMonAtk.name, currentMonAtk.dmg); 
+
+				clearWithEnter();
+			}
+		}
+		else if (decision == 2)
+		{
+			if (weapon.defense >= currentMonAtk.dmg)
+			{
+				printf("You successfully defended againt the %s and took no damage.", currentMonAtk.name); 
+
+				clearWithEnter(); 
+			}
+			else if (weapon.defense < currentMonAtk.dmg)
+			{
+				int totalDmg = currentMonAtk.dmg - weapon.defense; 
+
+				player.health -= totalDmg;  
+
+				printf("You failed to completely defend against the %s and took %d damage.", currentMonAtk.name, totalDmg); 
+
+				clearWithEnter();
+			}
+		}
+
+		monster.speed -= currentMonAtk.spdReq; 
+
+		monster.strength -= currentMonAtk.strnReq; 
+
+		if (player.health <= 0)
+		{
+			printf("GAME OVER. You were killed by the %s...\n", monster.name); 
+
+			clearWithEnter();
+
+			exit(0);
+		}
+
+		printf("You Current Status:\n\n\tHealth: %d\n\tStrength: %d\n\tSpeed: %d\n\tAgility: %d\n", player.health, player.strength, player.speed, player.agility);  
+
+		clearWithEnter();
+
+		printf("Monster's Current Status:\n\n\tHealth: %d\n\tStrength: %d\n\tSpeed: %d\n", monster.health, monster.strength, monster.speed);  
+
+		clearWithEnter();
+
+		printf("It is now your turn to make a move. What will you do?\n");
+
+		clearWithEnter();
+
+		printf("1. Attack\t\t2. Run Away\t\t3. Use Item\nType the number corresponding with your decision and hit enter.\n"); 
+
+		decision = getNum();
+
+		clearWithEnter(); 
+
+		break; 
 	}
 }
 
