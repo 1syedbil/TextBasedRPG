@@ -8,10 +8,11 @@
 //prototypes
 int clearWithEnter(void);
 int getNum(void);
-int gameOver(void);
+void gameOver(void); 
 void characterCreator(struct character* player); 
 void randEncounter(struct enemy* monster, struct character* player, struct weapon* weapon);   
 void battle(struct enemy monster, struct character player, struct weapon weapon);  
+void attackChoice(int decision, struct enemy* monster, struct character* player, struct weapon* weapon); 
 
 const int stringArraySize = 50;
 
@@ -60,11 +61,19 @@ struct character
 
 struct consumableItem 
 {
+	char name[stringArraySize];
 	int regen;
 	int posion;
 	int strnUp;
 	int spdUp;
 	int aglUp;
+};
+
+struct throwableItem
+{
+	char name[stringArraySize];
+	int dmg;
+	int numOfUses; 
 };
 
 struct attack
@@ -194,7 +203,7 @@ int main(void)
 	{
 		clearWithEnter();  
 
-		return gameOver(); 
+		gameOver();  
 	}
 
 	printf("Three guards walk up you. Each one kneels to you and offers up an item they are holding...\n\t1. Sword - Name: %s, Defense: %d, Attacks: %s, %s, %s\n\t2. Spear - Name: %s, Defense: %d, Attacks: %s, %s, %s\n\t3. Shield - Name: %s, Defense: %d, Ataacks: %s, %s, %s\nWhat will you choose?\n\n", strtSwrd.name, strtSwrd.defense, strtSwrd.attack1.name, strtSwrd.attack2.name, strtSwrd.attack3.name, strtSpr.name, strtSpr.defense, strtSpr.attack1.name, strtSpr.attack2.name, strtSpr.attack3.name, strtShld.name, strtShld.defense, strtShld.attack1.name, strtShld.attack2.name, strtShld.attack3.name);
@@ -307,11 +316,11 @@ void randEncounter(struct enemy* monster, struct character* player, struct weapo
 
 void battle(struct enemy monster, struct character player, struct weapon weapon)  
 {
+	int ogSpd = player.speed;
+
+	int ogStrn = player.strength; 
+
 	printf("A hostile %s attacks you!\n", monster.name);
-
-	clearWithEnter(); 
-
-	printf("Current Status:\n\n\tHealth: %d\n\tStrength: %d\n\tSpeed: %d\n\tAgility: %d\n", player.health, player.strength, player.speed, player.agility);
 
 	clearWithEnter(); 
 
@@ -319,6 +328,14 @@ void battle(struct enemy monster, struct character player, struct weapon weapon)
 
 	while (monster.health >= 0)
 	{
+		printf("Your Current Status:\n\n\tHealth: %d\n\tStrength: %d\n\tSpeed: %d\n\tAgility: %d\n", player.health, player.strength, player.speed, player.agility); 
+
+		clearWithEnter(); 
+
+		printf("Monster's Current Status:\n\n\tHealth: %d\n\tStrength: %d\n\tSpeed: %d\n", monster.health, monster.strength, monster.speed); 
+
+		clearWithEnter(); 
+
 		srand(time(NULL)); 
 
 		int i = rand() % 10; 
@@ -385,14 +402,14 @@ void battle(struct enemy monster, struct character player, struct weapon weapon)
 
 		if (player.health <= 0)
 		{
-			printf("GAME OVER. You were killed by the %s...\n", monster.name); 
+			printf("You were killed by the %s...\n", monster.name); 
 
 			clearWithEnter();
 
-			exit(0);
+			gameOver(); 
 		}
 
-		printf("You Current Status:\n\n\tHealth: %d\n\tStrength: %d\n\tSpeed: %d\n\tAgility: %d\n", player.health, player.strength, player.speed, player.agility);  
+		printf("Your Current Status:\n\n\tHealth: %d\n\tStrength: %d\n\tSpeed: %d\n\tAgility: %d\n", player.health, player.strength, player.speed, player.agility);  
 
 		clearWithEnter();
 
@@ -410,7 +427,173 @@ void battle(struct enemy monster, struct character player, struct weapon weapon)
 
 		clearWithEnter(); 
 
-		break; 
+		if (decision == 1)
+		{
+			printf("You have chosen to attack. What move will you use?\n\n\t1. %s\t2. %s\n\t3. %s\nType the number corresponding with your decision and hit enter.\n", weapon.attack1.name, weapon.attack2.name, weapon.attack3.name); 
+
+			decision = getNum();
+
+			clearWithEnter();
+
+			attackChoice(decision, &monster, &player, &weapon);  
+		}
+		else if (decision == 2)  
+		{ 
+			if (player.speed > monster.speed) 
+			{
+				printf("You succesfully escaped the battle!\n"); 
+
+				clearWithEnter();  
+				 
+				break;  
+			} 
+			else if (player.speed <= monster.speed) 
+			{ 
+				printf("You failed to escape the battle!\n"); 
+
+				clearWithEnter(); 
+
+				printf("The %s is attacking you again!\n", monster.name); 
+
+				clearWithEnter();
+			}
+		}
+
+		if (monster.health <= 0)
+		{
+			printf("You have defeated the %s!\n", monster.name); 
+
+			clearWithEnter();
+
+			break;
+		}
+	}
+
+	if (monster.health > 0)
+	{
+		printf("You fled the battle. Your stats will not replenish.\n");
+
+		clearWithEnter();
+
+		printf("Your Current Status:\n\n\tHealth: %d\n\tStrength: %d\n\tSpeed: %d\n\tAgility: %d\n", player.health, player.strength, player.speed, player.agility); 
+
+		clearWithEnter();
+	}
+	else if (monster.health <= 0)
+	{
+		printf("Your strength and speed stats will now be replenished.\n"); 
+
+		clearWithEnter();
+
+		player.speed = ogSpd;
+
+		player.strength = ogStrn;  
+
+		printf("Your Current Status:\n\n\tHealth: %d\n\tStrength: %d\n\tSpeed: %d\n\tAgility: %d\n", player.health, player.strength, player.speed, player.agility); 
+
+		clearWithEnter();  
+	}
+}
+
+void attackChoice(int decision, struct enemy* monster, struct character* player, struct weapon* weapon)
+{
+	if (decision == 1 && player->speed >= weapon->attack1.spdReq && player->strength >= weapon->attack1.strnReq)
+	{
+		monster->health -= weapon->attack1.dmg;
+
+		player->speed -= weapon->attack1.spdReq;
+
+		player->strength -= weapon->attack1.strnReq;
+
+		printf("You successfully used %s and did %d damage!\n", weapon->attack1.name, weapon->attack1.dmg); 
+
+		clearWithEnter();
+	}
+	else if (decision == 1 && player->speed < weapon->attack1.spdReq) 
+	{
+		printf("You lack the speed required to use this move and wasted your chance!\n");
+
+		clearWithEnter();
+
+		printf("The %s is attacking you again!\n", monster->name); 
+
+		clearWithEnter();
+	}
+	else if (decision == 1 && player->strength < weapon->attack1.strnReq) 
+	{
+		printf("You lack the strength required to use this move and wasted your chance!\n");
+
+		clearWithEnter();
+
+		printf("The %s is attacking you again!\n", monster->name); 
+
+		clearWithEnter();
+	}
+
+	if (decision == 2 && player->speed >= weapon->attack2.spdReq && player->strength >= weapon->attack2.strnReq)
+	{
+		monster->health -= weapon->attack2.dmg; 
+
+		player->speed -= weapon->attack2.spdReq;  
+		  
+		player->strength -= weapon->attack2.strnReq; 
+
+		printf("You successfully used %s and did %d damage!\n", weapon->attack2.name, weapon->attack2.dmg);  
+
+		clearWithEnter();
+	}
+	else if (decision == 2 && player->speed < weapon->attack2.spdReq)  
+	{
+		printf("You lack the speed required to use this move and wasted your chance!\n"); 
+
+		clearWithEnter();
+
+		printf("The %s is attacking you again!\n", monster->name);  
+
+		clearWithEnter();
+	}
+	else if (decision == 2 && player->strength < weapon->attack2.strnReq) 
+	{ 
+		printf("You lack the strength required to use this move and wasted your chance!\n");
+
+		clearWithEnter(); 
+
+		printf("The %s is attacking you again!\n", monster->name); 
+
+		clearWithEnter(); 
+	}
+
+	if (decision == 3 && player->speed >= weapon->attack3.spdReq && player->strength >= weapon->attack3.strnReq) 
+	{
+		monster->health -= weapon->attack3.dmg; 
+
+		player->speed -= weapon->attack3.spdReq; 
+
+		player->strength -= weapon->attack3.strnReq; 
+
+		printf("You successfully used %s and did %d damage!\n", weapon->attack3.name, weapon->attack3.dmg); 
+		  
+		clearWithEnter(); 
+	}
+	else if (decision == 3 && player->speed < weapon->attack3.spdReq) 
+	{
+		printf("You lack the speed required to use this move and wasted your chance!\n"); 
+
+		clearWithEnter(); 
+
+		printf("The %s is attacking you again!\n", monster->name);  
+
+		clearWithEnter(); 
+	}
+	else if (decision == 3 && player->strength < weapon->attack3.strnReq)  
+	{
+		printf("You lack the strength required to use this move and wasted your chance!\n"); 
+
+		clearWithEnter(); 
+
+		printf("The %s is attacking you again!\n", monster->name);  
+
+		clearWithEnter(); 
 	}
 }
 
@@ -466,13 +649,13 @@ void characterCreator(struct character* player)
 	clearWithEnter();
 }
 
-int gameOver(void)
+void gameOver(void) 
 {
 	printf("GAME OVER. Closing game...\n");
 
 	clearWithEnter();
 
-	return quitProg; 
+	exit(0); 
 }
 
 int clearWithEnter(void)
@@ -482,6 +665,7 @@ int clearWithEnter(void)
 	char enter[stringArraySize] = "";
 
 	fgets(enter, stringArraySize, stdin);
+
 	if (strchr(enter, '\n') != NULL) 
 	{
 		system("cls"); 
